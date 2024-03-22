@@ -85,3 +85,17 @@ df_json = json.loads(geo_df1.query('year=="2010"')[
 
 # Convert to string like object
 map_data = json.dumps(df_json)
+
+# Update chart
+map_all = build_map(map_source)
+
+cont_bar = bar_cont(bar_sc)
+
+count_line = chart_time(time_sc)
+
+ren_line = chart_energy(ren_sc)
+
+curdoc().add_root(column(year_slider, map_all))
+curdoc().title = 'Revenue generated worldwide from online retail shopping'
+
+rc.log("Map created", style='yellow')
