@@ -1,12 +1,12 @@
 # Retail Analysis for Online shopping
 
-Aim: Retail analysis for online shopping data.
+**Aim**: Retail analysis for online shopping data.
 
-*Author* : Praveen Shekar
+**Author** : Praveen Shekar
 
-*Data source* : https://www.kaggle.com/datasets/vijayuv/onlineretail
+**Data source** : https://www.kaggle.com/datasets/vijayuv/onlineretail
 
-*Tool* : Python 3.9.12
+**Tool** : Python 3.9.12
 
 Number of records : 541909
 
