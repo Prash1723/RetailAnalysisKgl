@@ -29,6 +29,16 @@ def create_data(attr, old, new):
     map_source.geojson = map_data
     bar_sc.data = df2
 
+def ARPU(src):
+    "Calculate Average Revenue per User"
+
+    # Calculate average revenue per user
+    chosen_country = country_slider.value
+    df1 = geo_df1[geo_df1['country']==str(chosen_country)].copy()
+    
+    # Assign source
+    map_source.geojson = map_data
+
 def build_map(src):
     """Build map data"""
 
