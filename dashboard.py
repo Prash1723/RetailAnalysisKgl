@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import logging
+
+from rich.logging import RichHandler
 
 from bokeh.plotting import figure, output_file, show, curdoc
 from bokeh.models import ColumnDataSource, Legend, GeoJSONDataSource, LinearColorMapper, ColorBar, Range1d
@@ -11,6 +14,21 @@ from bokeh.io import curdoc, output_notebook, show, output_file
 from bokeh.layouts import row, column, gridplot
 from bokeh.palettes import Viridis6 as palette
 from bokeh.transform import cumsum
+
+FORMAT='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+# Configuration for logging
+logging.basicConfig(
+    level="NOTSET", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
+)
+
+# Assign logger
+log = logging.getLogger('rich')
+
+# File output settings
+FileOut = logging.FileHandler('app.log')
+
+log.addHandler(FileOut)
 
 def create_data(attr, old, new):
     """Create and modify data for the bokeh map"""
@@ -108,4 +126,4 @@ ren_line = chart_energy(ren_sc)
 curdoc().add_root(column(year_slider, map_all))
 curdoc().title = 'Revenue generated worldwide from online retail shopping'
 
-rc.log("Map created", style='yellow')
+log.info("Map created", style='yellow')
