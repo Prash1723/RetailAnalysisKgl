@@ -15,6 +15,7 @@ from bokeh.layouts import row, column, gridplot
 from bokeh.palettes import Viridis6 as palette
 from bokeh.transform import cumsum
 
+
 FORMAT='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
 # Configuration for logging
@@ -98,37 +99,41 @@ def build_map(src):
     return map_all
 
 def main():
-    # Load data
-    df = pd.read_csv(r'data/customer.xlsx')
+    try:
+        # Load data
+        df = pd.read_csv(r'data/customer.xlsx')
 
-    # Load Map data
-    borders = 'mapping/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp'
-    gdf = gpd.read_file(borders)[['ADMIN', 'ADM0_A3', 'geometry']]
+        # Load Map data
+        borders = 'mapping/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp'
+        gdf = gpd.read_file(borders)[['ADMIN', 'ADM0_A3', 'geometry']]
 
-    # Merge data with co-ordinates
-    geo_df = gdf.merge(df, left_on='country', right_on='Country', how='left')
+        # Merge data with co-ordinates
+        geo_df = gdf.merge(df, left_on='country', right_on='Country', how='left')
 
-    # Read data to json
-    df_json = json.loads(geo_df1.query('year=="2010"')[
-        ['country', 'country_code', 'geometry', 'technology', 'unit', 'year', 'percentage']
-        ].to_json())
+        # Read data to json
+        df_json = json.loads(geo_df1.query('year=="2010"')[
+            ['country', 'country_code', 'geometry', 'technology', 'unit', 'year', 'percentage']
+            ].to_json())
 
-    # Convert to string like object
-    map_data = json.dumps(df_json)
+        # Convert to string like object
+        map_data = json.dumps(df_json)
 
-    # Update chart
-    map_all = build_map(map_source)
+        # Update chart
+        map_all = build_map(map_source)
 
-    cont_bar = bar_cont(bar_sc)
+        cont_bar = bar_cont(bar_sc)
 
-    count_line = chart_time(time_sc)
+        count_line = chart_time(time_sc)
 
-    ren_line = chart_energy(ren_sc)
+        ren_line = chart_energy(ren_sc)
 
-    curdoc().add_root(column(year_slider, map_all))
-    curdoc().title = 'Revenue generated worldwide from online retail shopping'
+        curdoc().add_root(column(year_slider, map_all))
+        curdoc().title = 'Revenue generated worldwide from online retail shopping'
 
-    log.info("Map created", style='yellow')
+        log.info("Map created")
+
+    except Exception as e:
+        log.error(f"Error: {e}")
 
 if __name__ == "__main__":
     main()
