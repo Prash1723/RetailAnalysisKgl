@@ -32,7 +32,9 @@ FileOut = logging.FileHandler('app.log')
 log.addHandler(FileOut)
 
 def create_data(attr, old, new):
-    """Create and modify data for the bokeh map"""
+    """
+    Create and modify data for the bokeh map
+    """
 
     # Mask data to the required year value
     chosen_year = year_slider.value
@@ -49,7 +51,9 @@ def create_data(attr, old, new):
     bar_sc.data = df2
 
 def ARPU(src):
-    "Calculate Average Revenue per User"
+    """
+    Calculate Average Revenue per User
+    """
 
     # Calculate average revenue per user
     chosen_country = country_slider.value
@@ -59,7 +63,9 @@ def ARPU(src):
     map_source.geojson = map_data
 
 def build_map(src):
-    """Build map data"""
+    """
+    Build map data
+    """
 
     # Data source
     map_source = src
@@ -99,6 +105,9 @@ def build_map(src):
     return map_all
 
 def main():
+    """
+    Main function to load data and process the map data
+    """
     try:
         # Load data
         df = pd.read_csv(r'data/customer.xlsx')
