@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import logging
+import geopandas as gpd
 
 from rich.logging import RichHandler
 
@@ -14,7 +15,6 @@ from bokeh.io import curdoc, output_notebook, show, output_file
 from bokeh.layouts import row, column, gridplot
 from bokeh.palettes import Viridis6 as palette
 from bokeh.transform import cumsum
-
 
 FORMAT='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
@@ -50,7 +50,9 @@ def create_data(attr, old, new):
     map_source.geojson = map_data
     bar_sc.data = df2
 
-def ARPU(src):
+    log.info("Year changed to @chosen_year")
+
+def ARPU(attr, old, new):
     """
     Calculate Average Revenue per User
     """
@@ -108,9 +110,12 @@ def main():
     """
     Main function to load data and process the map data
     """
+    log.info('Session started')  # Log that the session has starte
     try:
         # Load data
-        df = pd.read_csv(r'data/customer.xlsx')
+        df = pd.read_excel(r'data/customer.xlsx')
+
+        log.info("Map created")
 
         # Load Map data
         borders = 'mapping/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp'
@@ -138,8 +143,6 @@ def main():
 
         curdoc().add_root(column(year_slider, map_all))
         curdoc().title = 'Revenue generated worldwide from online retail shopping'
-
-        log.info("Map created")
 
     except Exception as e:
         log.error(f"Error: {e}")
