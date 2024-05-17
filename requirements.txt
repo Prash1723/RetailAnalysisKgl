@@ -3,5 +3,5 @@ pandas
 matplotlib
 logging
 rich
-bokeh
+bokeh==2.4.2
 geopandas

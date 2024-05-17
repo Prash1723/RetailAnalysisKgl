@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -30,6 +31,22 @@ log = logging.getLogger('rich')
 FileOut = logging.FileHandler('app.log')
 
 log.addHandler(FileOut)
+
+year_slider = Slider(title="Select Year", value=2010, start=2010, end=2012)
+
+country_slider = Select(
+    title="Select Continent", 
+    value="USA", 
+    options=[
+    'United Kingdom', 'France', 'Australia', 'Netherlands', 'Germany',
+    'Norway', 'EIRE', 'Switzerland', 'Spain', 'Poland', 'Portugal',
+    'Italy', 'Belgium', 'Lithuania', 'Japan', 'Iceland',
+    'Channel Islands', 'Denmark', 'Cyprus', 'Sweden', 'Austria',
+    'Israel', 'Finland', 'Bahrain', 'Greece', 'Hong Kong', 'Singapore',
+    'Lebanon', 'United Arab Emirates', 'Saudi Arabia',
+    'Czech Republic', 'Canada', 'Unspecified', 'Brazil', 'USA',
+    'European Community', 'Malta', 'RSA'
+    ])
 
 def create_data(attr, old, new):
     """
@@ -73,7 +90,7 @@ def build_map(src):
     map_source = src
 
     # Map Geometry
-    color_mapper = LinearColorMapper(palette=colorcet.bgy, low=0, high=100)
+    color_mapper = LinearColorMapper(palette=palette[::-2], low=0, high=100)
 
     color_bar = ColorBar(color_mapper = color_mapper, location = (0,0))
 
@@ -113,7 +130,15 @@ def main():
     log.info('Session started')  # Log that the session has starte
     try:
         # Load data
-        df = pd.read_excel(r'data/customer.xlsx')
+        df1 = pd.read_excel(r'data/customer.xlsx')
+
+        df1['Revenue'] = df1['UnitPrice']*df1['Quantity']
+
+        df = df1.groupby(['Country', 'CustomerID', 'InvoiceDate'])[['Quantity', 'Revenue']].sum().reset_index()
+
+        df.columns = ['country', 'CustomerID', 'InvoiceDate', 'Quantity', 'Revenue']
+
+        df['year'] = df['InvoiceDate'].dt.year
 
         log.info("Map created")
 
@@ -121,27 +146,27 @@ def main():
         borders = 'mapping/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp'
         gdf = gpd.read_file(borders)[['ADMIN', 'ADM0_A3', 'geometry']]
 
+        # Rename columns
+        gdf.columns = ['country', 'country_code', 'geometry']
+
         # Merge data with co-ordinates
-        geo_df = gdf.merge(df, left_on='country', right_on='Country', how='left')
+        geo_df = gdf.merge(df, left_on='country', right_on='country', how='right')
 
         # Read data to json
-        df_json = json.loads(geo_df1.query('year=="2010"')[
-            ['country', 'country_code', 'geometry', 'technology', 'unit', 'year', 'percentage']
+        df_json = json.loads(geo_df[
+            ['country', 'country_code', 'geometry', 'year', 'Quantity', 'Revenue', 'CustomerID']
             ].to_json())
 
         # Convert to string like object
         map_data = json.dumps(df_json)
 
+        # Assign Source
+        map_source = GeoJSONDataSource(geojson = map_data)
+
         # Update chart
         map_all = build_map(map_source)
 
-        cont_bar = bar_cont(bar_sc)
-
-        count_line = chart_time(time_sc)
-
-        ren_line = chart_energy(ren_sc)
-
-        curdoc().add_root(column(year_slider, map_all))
+        curdoc().add_root(column(row(year_slider, country_slider), map_all))
         curdoc().title = 'Revenue generated worldwide from online retail shopping'
 
     except Exception as e:
