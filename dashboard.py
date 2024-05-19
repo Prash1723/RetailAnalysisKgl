@@ -36,7 +36,7 @@ log.addHandler(FileOut)
 
 year_slider = Slider(title="Select Year", value=2010, start=2010, end=2012)
 
-country_slider = Select(
+count_sel = Select(
     title="Select Continent", 
     value="USA", 
     options=[
@@ -178,6 +178,10 @@ def main():
 
         # Update chart
         map_all = build_map(map_source)
+
+        year_slider.on_change('value', create_data)
+
+        count_sel.on_change('value', ARPU)
 
         log.info("Map created")
 
