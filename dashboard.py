@@ -4,6 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import logging
 import geopandas as gpd
+import python_calamine
+from typing import IO, Iterator
 
 from rich.logging import RichHandler
 
@@ -48,11 +50,24 @@ country_slider = Select(
     'European Community', 'Malta', 'RSA'
     ])
 
+def iter_ec(file: IO[bytes]) -> Iterator[dict[str, object]]:
+    workbook = python_calamine.CalamineWorkbook.from_filelike(file)
+    rows = iter(workbook.get_sheet_by_index(0).to_python())
+    headers = list(map(str, next(rows)))
+    for row in rows:
+        yield dict(zip(headers, row))
+
+def load_data(file_path):
+    with open(file_path, 'rb') as f:
+        rows = iter_ec(f)
+        row = list(rows)
+    df = pd.DataFrame(row)
+    return df
+
 def create_data(attr, old, new):
     """
     Create and modify data for the bokeh map
     """
-
     # Mask data to the required year value
     chosen_year = year_slider.value
     df1 = geo_df1[geo_df1['year']==str(chosen_year)].copy()
@@ -130,7 +145,7 @@ def main():
     log.info('Session started')  # Log that the session has starte
     try:
         # Load data
-        df1 = pd.read_excel(r'data/customer.xlsx')
+        df1 = load_data(r'data/customer.xlsx')
 
         df1['Revenue'] = df1['UnitPrice']*df1['Quantity']
 
@@ -139,8 +154,6 @@ def main():
         df.columns = ['country', 'CustomerID', 'InvoiceDate', 'Quantity', 'Revenue']
 
         df['year'] = df['InvoiceDate'].dt.year
-
-        log.info("Map created")
 
         # Load Map data
         borders = 'mapping/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp'
@@ -165,6 +178,8 @@ def main():
 
         # Update chart
         map_all = build_map(map_source)
+
+        log.info("Map created")
 
         curdoc().add_root(column(row(year_slider, country_slider), map_all))
         curdoc().title = 'Revenue generated worldwide from online retail shopping'
