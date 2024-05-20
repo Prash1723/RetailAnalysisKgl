@@ -90,7 +90,7 @@ def ARPU(attr, old, new):
     """
 
     # Calculate average revenue per user
-    chosen_country = country_slider.value
+    chosen_country = count_sel.value
     df1 = geo_df1[geo_df1['country']==str(chosen_country)].copy()
     
     # Assign source
@@ -185,7 +185,7 @@ def main():
 
         log.info("Map created")
 
-        curdoc().add_root(column(row(year_slider, country_slider), map_all))
+        curdoc().add_root(column(row(year_slider, count_sel), map_all))
         curdoc().title = 'Revenue generated worldwide from online retail shopping'
 
     except Exception as e:
