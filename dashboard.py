@@ -97,41 +97,7 @@ def build_map(src):
     Build map data
     """
 
-    # Data source
-    map_source = src
-
-    # Map Geometry
-    color_mapper = LinearColorMapper(palette=palette[::-2], low=0, high=100)
-
-    color_bar = ColorBar(color_mapper = color_mapper, location = (0,0))
-
-    # Map
-    TOOLS = "pan,wheel_zoom,reset,hover,save"
-
-    map_all = figure(plot_width=725, plot_height=500,
-                    title="Retail shopping from different countries",
-                    tools=TOOLS, x_axis_location=None, y_axis_location=None,
-                    tooltips = [
-                        ("Country", "@country"),
-                        ("Revenue", "@Revenue")
-                    ]
-                )
-
-    map_all.grid.grid_line_color = None
-    map_all.hover.point_policy = "follow_mouse"
-
-    # Create patches (of map)
-    map_all.patches(
-        "xs", "ys", source=map_source,
-        fill_color={
-            "field": 'Revenue',
-            "transform": color_mapper
-        },
-        fill_alpha=0.7, line_color="black", line_width=0.5
-    )
-
-    map_all.add_layout(color_bar, 'below')
-
+    
     return map_all
 
 def main():
@@ -203,7 +169,37 @@ def main():
         count_sel.on_change('value', ARPU)
 
         # Update chart
-        map_all = build_map(map_source)
+        # Map Geometry
+        color_mapper = LinearColorMapper(palette=palette[::-2], low=0, high=100)
+
+        color_bar = ColorBar(color_mapper = color_mapper, location = (0,0))
+
+        # Map
+        TOOLS = "pan,wheel_zoom,reset,hover,save"
+
+        map_all = figure(plot_width=725, plot_height=500,
+                        title="Retail shopping from different countries",
+                        tools=TOOLS, x_axis_location=None, y_axis_location=None,
+                        tooltips = [
+                            ("Country", "@country"),
+                            ("Revenue", "@Revenue")
+                        ]
+                    )
+
+        map_all.grid.grid_line_color = None
+        map_all.hover.point_policy = "follow_mouse"
+
+        # Create patches (of map)
+        map_all.patches(
+            "xs", "ys", source=map_source,
+            fill_color={
+                "field": 'Revenue',
+                "transform": color_mapper
+            },
+            fill_alpha=0.7, line_color="black", line_width=0.5
+        )
+
+        map_all.add_layout(color_bar, 'below')
 
         log.info("Map created")
 
