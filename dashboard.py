@@ -1,7 +1,5 @@
 import json
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import logging
 import geopandas as gpd
 import python_calamine
@@ -70,8 +68,7 @@ def create_data(attr, old, new):
     """
     # Mask data to the required year value
     chosen_year = year_slider.value
-    df1 = geo_df1[geo_df1['year']==str(chosen_year)].copy()
-    df2 = gen_df1.query('country.isin(@continents)')[gen_df1['year']==str(chosen_year)].copy()
+    df1 = geo_df[geo_df['year']==str(chosen_year)].copy()
 
     # Read data to json
     df_json = json.loads(df1[['country', 'country_code', 'geometry', 'technology', 'unit', 'year', 'percentage']].to_json())
@@ -80,7 +77,6 @@ def create_data(attr, old, new):
 
     # Assign Source
     map_source.geojson = map_data
-    bar_sc.data = df2
 
     log.info("Year changed to @chosen_year")
 
@@ -91,7 +87,7 @@ def ARPU(attr, old, new):
 
     # Calculate average revenue per user
     chosen_country = count_sel.value
-    df1 = geo_df1[geo_df1['country']==str(chosen_country)].copy()
+    df1 = geo_df[geo_df['country']==str(chosen_country)].copy()
     
     # Assign source
     map_source.geojson = map_data
@@ -116,7 +112,7 @@ def build_map(src):
                     title="Retail shopping from different countries",
                     tools=TOOLS, x_axis_location=None, y_axis_location=None,
                     tooltips = [
-                        ("Country", "@Country"),
+                        ("Country", "@country"),
                         ("Revenue", "@Revenue")
                     ]
                 )
@@ -147,13 +143,37 @@ def main():
         # Load data
         df1 = load_data(r'data/customer.xlsx')
 
+        # Preprocessing country names for merge
+        rename_country = {
+        'EIRE': 'Ireland',
+        'USA': 'United States of America',
+        'RSA': 'South Africa',
+        'Czech Republic': 'Czechia'
+        }
+
+        isles = [
+        'Bahrain', 
+        'Singapore', 
+        'Hong Kong', 
+        'Malta', 
+        'Channel Islands', 
+        'European Community',
+        'Unspecified'
+        ]
+
+        df1['Country'] = df1['Country'].apply(lambda x: rename_country.get(x, x))
+
+        isles_df = df1.query('Country.isin(@isles)')
+
+        df1 = df1.query('~Country.isin(@isles)').copy()
+
         df1['Revenue'] = df1['UnitPrice']*df1['Quantity']
 
-        df = df1.groupby(['Country', 'CustomerID', 'InvoiceDate'])[['Quantity', 'Revenue']].sum().reset_index()
+        df1['year'] = df1['InvoiceDate'].dt.year
 
-        df.columns = ['country', 'CustomerID', 'InvoiceDate', 'Quantity', 'Revenue']
+        df = df1.groupby(['Country', 'year'])[['Quantity', 'Revenue']].sum().reset_index()
 
-        df['year'] = df['InvoiceDate'].dt.year
+        df.columns = ['country', 'year', 'Quantity', 'Revenue']
 
         # Load Map data
         borders = 'mapping/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp'
@@ -163,25 +183,27 @@ def main():
         gdf.columns = ['country', 'country_code', 'geometry']
 
         # Merge data with co-ordinates
+        global geo_df
         geo_df = gdf.merge(df, left_on='country', right_on='country', how='right')
 
         # Read data to json
-        df_json = json.loads(geo_df[
-            ['country', 'country_code', 'geometry', 'year', 'Quantity', 'Revenue', 'CustomerID']
-            ].to_json())
+        df_json = json.loads(geo_df.query('year==2010')[
+             ['country', 'country_code', 'geometry', 'year', 'Quantity', 'Revenue']
+             ].to_json())
 
         # Convert to string like object
         map_data = json.dumps(df_json)
 
         # Assign Source
+        global map_source
         map_source = GeoJSONDataSource(geojson = map_data)
-
-        # Update chart
-        map_all = build_map(map_source)
 
         year_slider.on_change('value', create_data)
 
         count_sel.on_change('value', ARPU)
+
+        # Update chart
+        map_all = build_map(map_source)
 
         log.info("Map created")
 
