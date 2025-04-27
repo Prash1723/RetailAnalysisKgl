@@ -47,7 +47,13 @@ pip3 install -r requirements.txt
 jupyter notebook
 ```
 
-5. Run the notebook
+5. Open the notebook
+
+6. Run the Dashboard
+
+```bash
+bokeh serve --show dashboard.py
+```
 
 ## License
 
