@@ -18,6 +18,7 @@ The dataset consists of online retail data of the platform and its transaction d
     - Seaborn
     - Matplotlib
     - Numpy
+    - Bokeh
 
 ## Run
 
